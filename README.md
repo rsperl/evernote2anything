@@ -1,9 +1,9 @@
 # introduction
 
 I use evernote a lot, but I would like to know I could move to something else if I wanted.
-This script will convert an exported evernote note(s) to a more generic format.
+This script will convert an exported evernote note(s) to a more generic format like Markdown.
 
-I found TagSpaces which uses the name of the file for the name of the note, and saves the tags inside the name of the file like
+I found [TagSpaces](http://www.tagspaces.org) which uses the name of the file for the name of the note, and saves the tags inside the name of the file like
 
 ```name of file[tag1 tag2 tag3].md```
 
