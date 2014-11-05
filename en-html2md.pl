@@ -23,19 +23,22 @@ GetOptions(
 );
 
 if( ! ($IMPORT_FILE && $OUTPUT_DIR) ) {
-    print "Usage: $FindBin::Script --import <file.enex> --output-dir <dir>\n";
+    print "Usage: $FindBin::Script --import <file.html> --output-dir <dir>\n";
     exit 1;
 }
 
-my $parser = XML::Simple->new;
 my $wc = HTML::WikiConverter->new(dialect => "Markdown");
-my $xml = $parser->XMLin($IMPORT_FILE);
-my @notes;
-if( ref($xml->{note}) eq 'ARRAY' ) {
-    @notes = @{$xml->{note}};
-} else {
-    @notes = ($xml->{note});
-}
+open my $fh, '<', $IMPORT_FILE;
+my $content = do { local $/; <$fh>; };
+close $fh;
+$content = $wc->html2wiki($content);
+open $fh, '>', "test_html.md";
+print $fh $content;
+close $fh;
+print "finished\n";
+
+__END__
+
 foreach my $note ( @notes ) {
     print Dumper($note);
     exit;
