@@ -31,7 +31,9 @@ my $wc = HTML::WikiConverter->new(dialect => "Markdown");
 open my $fh, '<', $IMPORT_FILE;
 my $content = do { local $/; <$fh>; };
 close $fh;
-$content = $wc->html2wiki($content);
+if( index($content, "<en-media") >= 0 ||
+    index($content, "<en-todo")  >= 0 ) {
+    $content = $wc->html2wiki($content);
 open $fh, '>', "test_html.md";
 print $fh $content;
 close $fh;
