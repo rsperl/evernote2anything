@@ -4,6 +4,7 @@ use strict;
 use Moose;
 use Mojo::DOM;
 use DateTime;
+use Mojo::Collection;
 use HTML::WikiConverter;
 use Data::Dumper;
 
@@ -57,8 +58,11 @@ sub save {
 
 %s
 EOF
-    my $filename = $self->html_filename;
-    $filename =~ s/\.html$/.md/;
+    my @parts = split(/\//, $self->html_filename);
+    my $filename = pop @parts;
+    $filename =~ s/html$/md/;
+    $filename =~ s/["'|\/\\:]//g;
+    $filename = join("/", @parts) . "/$filename";
     open my $fh, '>', $filename or die "Can't open $filename for writing: $!";
     print $fh sprintf $format,
         $self->title,
@@ -77,14 +81,21 @@ sub parse {
     my $title = $dom->find("html title")->[0]->text;
     $self->title($title);
 
-    my $row_nodes = $dom->find("html body div table tr");
+    my $tables = $dom->find("html body div table");
+    my $row_nodes = Mojo::Collection->new;
+    if( $tables->[0] ) {
+        $row_nodes = $tables->[0]->find("tr");
+    }
 
     $row_nodes->each(sub {
             my ($e, $count) = @_;
             my $row_dom = Mojo::DOM->new()->parse("" . $e);
             my $name = lc($row_dom->find("b")->[0]->text);
             $name =~ s/:$//;
-            my $value = $row_dom->find("i")->[0]->text;
+            my $value = "";
+            if( $row_dom->find("i")->[0] ) {
+                $value = $row_dom->find("i")->[0]->text;
+            }
             if( $name =~ /tags/i ) {
                 my @a = split(/,/, $value);
                 for(my $i=0; $i<@a; $i++) {
