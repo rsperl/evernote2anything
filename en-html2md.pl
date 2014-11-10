@@ -5,8 +5,9 @@ use warnings;
 use FindBin;
 use Try::Tiny;
 use XML::Simple;
+use Template;
 use Data::Dumper;
-use Data::Printer;
+use EN;
 use DateTime;
 use HTML::WikiConverter::Markdown;
 use Getopt::Long;
@@ -16,54 +17,54 @@ my $DEBUG = ($ENV{DEBUG} && $ENV{DEBUG} == 1? 1 : 0);
 
 my @DO_NOT_CONVERT_IF_TAGGED = qw(markdown);
 
-my ($IMPORT_FILE, $OUTPUT_DIR);
+my ($TEMPLATE, $IMPORT_DIR, $OUTPUT_DIR, $EXT);
 GetOptions(
-    "import:s" => \$IMPORT_FILE,
+    "template:s"   => \$TEMPLATE,
+    "ext:s"        => \$EXT,
+    "import-dir:s" => \$IMPORT_DIR,
     "output-dir:s" => \$OUTPUT_DIR,
 );
 
-if( ! ($IMPORT_FILE && $OUTPUT_DIR) ) {
-    print "Usage: $FindBin::Script --import <file.html> --output-dir <dir>\n";
+if( ! ($IMPORT_DIR && $OUTPUT_DIR && $TEMPLATE) ) {
+    print <<EOF;
+Usage: $FindBin::Script --template <t> --ext <e> --import-dir <d> --output-dir <d>
+    --import-dir d  Process files in this directory
+    --output-dir d  Save converted files to this directory
+    --template t    Template to use for writing out notes (see Template::Toolkit)
+    --ext e         Extension to use for output files
+EOF
     exit 1;
 }
 
+my $tt = Template->new;
 my $wc = HTML::WikiConverter->new(dialect => "Markdown");
-open my $fh, '<', $IMPORT_FILE;
-my $content = do { local $/; <$fh>; };
-close $fh;
-if( index($content, "<en-media") >= 0 ||
-    index($content, "<en-todo")  >= 0 ) {
-    $content = $wc->html2wiki($content);
-open $fh, '>', "test_html.md";
-print $fh $content;
-close $fh;
+
+print "reading files from $IMPORT_DIR\n";
+opendir(D, $IMPORT_DIR) or die "can't open import directory $IMPORT_DIR: $!\n";
+my @files = readdir(D);
+foreach my $file (@files) {
+    my $in_file = "$IMPORT_DIR/$file";
+    next unless -f $in_file && $in_file =~ /html$/;
+    print "processing $in_file\n";
+    my $en = EN->new(html_filename => $in_file);
+    my $vars = {
+        title       => $en->title,
+        tags_string => join(", ", $en->tags),
+        body        => $en->body,
+        author      => $en->author,
+        created     => $en->created,
+        updated     => $en->updated,
+        source      => $en->source,
+    };
+    my $normalized_title = $en->normalize_title;
+    my $out_file         = "$OUTPUT_DIR/$normalized_title.$EXT";
+    $tt->process($TEMPLATE, $vars, $out_file);
+    print "saved as $out_file\n";
+}
+
 print "finished\n";
 
 __END__
-
-foreach my $note ( @notes ) {
-    print Dumper($note);
-    exit;
-    my $parsed_note = parse_note($note);
-    save_note($parsed_note);
-}
-
-sub save_note {
-    my $note = shift;
-    print "start tags: " . Dumper($note->{tags}) . "\n";
-    my @tags = sort
-                    @{$note->{tags}},
-                    $note->{created}->ymd("") . '-' . $note->{created}->hms("");;
-    for(my $i=0; $i<@tags; $i++) {
-        $tags[$i] =~ s/\s+/_/g;
-    }
-    my $tags = join(' ', @tags);
-    my $filename = $note->{title} . "[$tags].md";
-    print "filename: $filename\n";
-    open my $fh , '>', "$OUTPUT_DIR/$filename";
-    print $fh $note->{content};
-    close $fh;
-}
 
 sub parse_note {
     my $note = shift;
@@ -101,15 +102,5 @@ sub parse_note {
         content => $content,
         created => $dt_created,
     };
-}
-
-sub array_contains {
-    my ($needles, $haystack) = @_;
-    die "needles must be an arrayref"  unless ref($needles)  eq 'ARRAY';
-    die "haystack must be an arrayref" unless ref($haystack) eq 'ARRAY';
-    foreach my $needle (@$needles) {
-        return 1 if grep({/^$needle$/} @$haystack);
-    }
-    return 0;
 }
 
