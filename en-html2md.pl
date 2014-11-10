@@ -4,19 +4,24 @@ use strict;
 use warnings;
 use FindBin;
 use Try::Tiny;
+<<<<<<< HEAD
 use XML::Simple;
 use Template;
+=======
+>>>>>>> 8827865911c5ef110e90d635cf24a8d2bc6ba4ea
 use Data::Dumper;
 use EN;
 use DateTime;
-use HTML::WikiConverter::Markdown;
 use Getopt::Long;
+use EN;
 use utf8;
 
 my $DEBUG = ($ENV{DEBUG} && $ENV{DEBUG} == 1? 1 : 0);
 
-my @DO_NOT_CONVERT_IF_TAGGED = qw(markdown);
+my $input_file = shift @ARGV;
+chomp $input_file;
 
+<<<<<<< HEAD
 my ($TEMPLATE, $IMPORT_DIR, $OUTPUT_DIR, $EXT);
 GetOptions(
     "template:s"   => \$TEMPLATE,
@@ -78,29 +83,33 @@ sub parse_note {
         }
     }
     my $content = "";
-    try {
-        if( ! array_contains(\@DO_NOT_CONVERT_IF_TAGGED, \@tags) ) {
-            $content = $wc->html2wiki($note->{content});
-        }
-        $content =~ s/\\x{(.+?)}/chr(hex($1))/ge;
-        # $content =~ s/(.)/(ord($1) > 127) ? "" : $1/egs;
-    } catch {
-        $content = $_;
-    };
-    my $dt_created;
-    if( $note->{created} =~ /^(\d\d\d\d)(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)Z$/ ) {
-        $dt_created = DateTime->new(
-                            time_zone => "UTC", year => $1, month => $2, day => $3,
-                            hour => $4, minute => $5, second => $6
-                        );
-    } else {
-        print "bad created time: $note->{created}\n";
-    }
-    return {
-        title   => $title,
-        tags    => \@tags,
-        content => $content,
-        created => $dt_created,
-    };
+=======
+my @files;
+if( -f $input_file ) {
+    @files = ($input_file);
+} else {
+    opendir D, $input_file;
+    @files = map { "$input_file/$_" } readdir(D);
+    closedir D;
 }
 
+foreach my $file (@files) {
+    next unless -f $file && $file =~ /\.html$/;
+    my $failed = 0;
+    print "Migrating $file\n";
+>>>>>>> 8827865911c5ef110e90d635cf24a8d2bc6ba4ea
+    try {
+        my $output = EN->new(html_filename => $file)
+                    ->parse
+                    ->save;
+        print "Saved $output\n";
+    } catch {
+        $failed = 1;
+        print "failed $file: $_";
+    };
+
+<<<<<<< HEAD
+=======
+    exit if $failed;
+}
+>>>>>>> 8827865911c5ef110e90d635cf24a8d2bc6ba4ea

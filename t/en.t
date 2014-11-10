@@ -2,31 +2,39 @@ use strict;
 use warnings;
 
 use Test::More;
+use Data::Dumper;
 use lib '..';
 use_ok("EN");
 
 my $html = do { local $/; <DATA>; };
-my $en = EN->new(input_html => $html);
+my $filename = "/tmp/file.$$.html";
+open my $fh, '>', $filename;
+print $fh $html;
+close $fh;
+my $en = EN->new(html_filename => $filename);
+unlink $filename;
 isa_ok($en, "EN");
 is($en->input_html, $html, "got html back");
 
 $en->parse;
 
 my $exp_title = "with video";
-my $exp_tags  = "funny, tag2";
+my $exp_tags  = [qw(funny tag2)];
 my $exp_src   = "https://pbs.twimg.com/tweet_video/BzyRPhOIAAAKnKz.mp4";
 my $exp_auth  = "Richard Sugg";
 my $exp_created = '10/19/2014 4:20 PM';
 my $exp_updated = '11/4/2014 11:26 AM';
+
 is($en->title,  $exp_title, "got title");
-is($en->tags,   $exp_tags,  "got tags");
+is_deeply($en->tags,   $exp_tags,  "got tags");
 is($en->source, $exp_src,   "got source");
 is($en->author, $exp_auth,  "got author");
 is($en->created, $exp_created, "got created");
 is($en->updated, $exp_updated, "got updated");
 
-done_testing;
+note "body: " . Dumper($en->body);
 
+done_testing;
 
 
 __DATA__
