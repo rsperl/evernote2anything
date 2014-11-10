@@ -4,11 +4,8 @@ use strict;
 use warnings;
 use FindBin;
 use Try::Tiny;
-<<<<<<< HEAD
 use XML::Simple;
 use Template;
-=======
->>>>>>> 8827865911c5ef110e90d635cf24a8d2bc6ba4ea
 use Data::Dumper;
 use EN;
 use DateTime;
@@ -18,10 +15,7 @@ use utf8;
 
 my $DEBUG = ($ENV{DEBUG} && $ENV{DEBUG} == 1? 1 : 0);
 
-my $input_file = shift @ARGV;
-chomp $input_file;
 
-<<<<<<< HEAD
 my ($TEMPLATE, $IMPORT_DIR, $OUTPUT_DIR, $EXT);
 GetOptions(
     "template:s"   => \$TEMPLATE,
