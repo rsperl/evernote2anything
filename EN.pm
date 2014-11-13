@@ -49,6 +49,8 @@ sub normalize_title {
     my $self = shift;
     my $title = $self->title;
 
+    $title =~ s/[\|:]/-/g;
+
     return $title;
 }
 
@@ -89,6 +91,9 @@ sub parse {
         }
     );
 
-    $self->body($wc->html2wiki($self->input_html));
+    my $body = $wc->html2wiki($self->input_html);
+    $body =~ s/\<br\s*?\/\>/\n/g;
+    $body =~ s/\n\n/\n/gm;
+    $self->body($body);
     return $self;
 }

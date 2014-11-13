@@ -46,6 +46,7 @@ foreach my $file (@files) {
     next unless -f $in_file && $in_file =~ /html$/;
     print "processing $in_file\n";
     my $en = EN->new(html_filename => $in_file);
+    $en->parse;
     my $vars = {
         title       => $en->title,
         tags_string => join(", ", $en->tags),
