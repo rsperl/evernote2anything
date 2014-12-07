@@ -8,6 +8,7 @@ use XML::Simple;
 use Evernote::Note;
 
 has xmlfile => (is => 'rw', isa => 'Str', required => 1);
+has body_parser => (is => 'rw', isa => 'Object', required => 1);
 
 my $xmlparser = XML::Simple->new;
 my $xml;
@@ -53,6 +54,7 @@ sub _parse_notes {
         }
 
         push(@parsed_notes, new Evernote::Note(
+                parser     => $self->body_parser,
                 tags       => $tags,
                 created    => $dt_created,
                 updated    => $dt_updated,

@@ -3,15 +3,16 @@
 use strict;
 use FindBin;
 use Evernote::EnexParser;
+use Evernote::Note::Markdown;
 
 
 my $enex = shift @ARGV;
 die "Could not find enex file" unless -r $enex;
 
-my $enc = Evernote::EnexParser->new(xmlfile => $enex);
-isa_ok($enc, "Evernote::EnexParser");
+my $enc = Evernote::EnexParser->new(xmlfile => $enex, body_parser => Evernote::Note::Markdown->new);
 my @notes = $enc->notes;
 
 foreach my $n (@notes) {
-    note $n->title;
+    printf "Title: %s\n",  $n->title;
+    printf "Body:\n%s\n", $n->body;
 }
