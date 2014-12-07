@@ -1,4 +1,4 @@
-package EN;
+package Evernote::Note;
 
 use strict;
 use Moose;
@@ -9,19 +9,16 @@ use HTML::WikiConverter;
 use Data::Dumper;
 
 
-has html_filename => (is => 'ro', isa => 'Str', required => 1);
-has input_html => (is => 'rw', isa => 'Str',      required     => 0);
-
-has tags        => (is => 'rw', isa => 'ArrayRef', default => sub {[]});
+has tags       => (is => 'rw', isa => 'ArrayRef', default => sub {[]});
 has created    => (is => 'rw', isa => 'DateTime', default => sub { DateTime->now });
-has created    => (is => 'rw', isa => 'Str', default => '');
 has author     => (is => 'rw', isa => 'Str', default => '');
 has source     => (is => 'rw', isa => 'Str', default => '');
 has title      => (is => 'rw', isa => 'Str', default => '');
 has updated    => (is => 'rw', isa => 'DateTime', default => sub { DateTime->now });
-has updated    => (is => 'rw', isa => 'Str', default => '');
-has location   => (is => 'rw', isa => 'Str', default => '');
-has body       => (is => 'rw', isa => 'Str', default => '');
+has longtitude => (is => 'rw', isa => 'Num', default => '');
+has latitude   => (is => 'rw', isa => 'Num', default => '');
+has altitude   => (is => 'rw', isa => 'Num', default => '');
+has body_raw   => (is => 'rw', isa => 'Str', default => '');
 
 my $html = Mojo::DOM->new;
 my $wc   = HTML::WikiConverter->new(
@@ -33,16 +30,6 @@ my $wc   = HTML::WikiConverter->new(
 
 sub BUILD {
     my ($self, $opts) = @_;
-    open my $fh, '<', $opts->{html_filename} or die "Can't open $opts->{html_filename}: $!";
-    $opts->{input_html} = do { local $/; <$fh>; };
-    $opts->{input_html} =~ s/<a name="\d+?"\/>//;
-    $self->input_html( $opts->{input_html} );
-    close $fh;
-    if(
-        index($opts->{input_html}, "<img") != -1
-    ) {
-        #die "$opts->{html_filename} contains images"
-    }
 }
 
 sub normalize_title {
@@ -54,7 +41,7 @@ sub normalize_title {
     return $title;
 }
 
-sub parse {
+sub parse_body {
     my ($self) = @_;
 
     my $dom = $html->parse($self->input_html);
@@ -97,3 +84,5 @@ sub parse {
     $self->body($body);
     return $self;
 }
+
+1;
