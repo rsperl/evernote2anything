@@ -32,6 +32,12 @@ my $tt = Template->new;
 foreach my $n (@notes) {
 
     my @tags = @{ $n->tags };
+    my $fn = "$outputdir/" . $n->normalize_title;
+    if( $tagspaces ) {
+        push @tags, $n->created->ymd("");
+        $fn .= "[" . join(" ", @tags) . "]";
+    }
+    $fn .= ".md";
     my $vars = {
         title       => $n->title,
         tags_string => join(", ", @tags),
@@ -41,9 +47,6 @@ foreach my $n (@notes) {
         updated     => $n->updated->ymd . $n->updated->hms,
         source      => $n->source
     };
-    my $fn = "$outputdir/" . $n->normalize_title;
-    $fn .= "[" . join(" ", @tags) . "]" if $tagspaces && @tags;
-    $fn .= ".md";
     printf "Saving %s\n", $fn;
-    $tt->process($template, $vars, $fn);
+    $tt->process($template, $vars, $fn) || die $tt->error();
 }
