@@ -6,6 +6,7 @@ Perl dependencies:
 * Moose
 * HTML::WikiConverter
 * HTML::WikiConverter::Markdown
+* Template::Toolkit
 
 These can be installed by running
 
@@ -21,9 +22,10 @@ you'll need to follow the instructions at the link to make it work correctly.
 
 ```
 use Evernote::EnexParser;
+use Evernote::Note::Markdown;
 
 my $enex_file = "EvernoteExport.enex";
-my $parser = Evernote::EnexParser->new(xmlfile => $enex_file);
+my $parser = Evernote::EnexParser->new(xmlfile => $enex_file, body_parser => Evernote::Note::Markdown->new );
 my @notes = $parser->notes;
 foreach my $note ( @notes ) {
     printf "Title: %s\n", $note->title;
@@ -40,9 +42,9 @@ Parsing the body is the tricky part. Evernote has special tags for pictures, vid
 I've included a starter script ```en2something.pl``` to get you started. Use it by calling it as
 
 ```
-PERL5LIB=lib ./en2something.pl path/to/exportedNotes.enex
+PERL5LIB=lib ./en2something.pl --output output-dir --enex path/to/exportedNotes.enex --template templates/t1.body.tt --tagspaces
 ```
-It will parse the notes and print out the title of each note. You can extend this by parsing the body and writing to file or however you want to process the note.
+It will parse the notes and print out the title of each note. Files will be created as markdown in the output-dir. How the note is written is determined by the template (using Template::Toolkit). If --tagspaces is given, the tags will be inserted into the filename.
 
 There is an example enex file in the ```t``` folder for reference.
 
