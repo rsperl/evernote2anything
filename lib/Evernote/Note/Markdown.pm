@@ -2,8 +2,8 @@ package Evernote::Note::Markdown;
 
 use strict;
 use Moose;
-use Mojo::Collection;
 use HTML::WikiConverter;
+use Try::Tiny;
 
 my $wc   = HTML::WikiConverter->new(
                 dialect     => "Markdown",
@@ -14,7 +14,14 @@ my $wc   = HTML::WikiConverter->new(
 
 sub parse {
     my ($self, $raw_text) = @_;
-    my $md = $wc->html2wiki($raw_text);
+    my $md;
+    try {
+        $md = $wc->html2wiki($raw_text);
+    } catch {
+        $md = "Error converting to markdown: $_";
+        $md .= $raw_text;
+    };
+
     return $md;
 }
 

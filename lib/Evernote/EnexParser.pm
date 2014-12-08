@@ -7,6 +7,8 @@ use DateTime;
 use XML::Simple;
 use Evernote::Note;
 
+use utf8;
+
 has xmlfile => (is => 'rw', isa => 'Str', required => 1);
 has body_parser => (is => 'rw', isa => 'Object', required => 1);
 
@@ -47,11 +49,12 @@ sub _parse_notes {
         }
         my $attrs = $n->{'note-attributes'};
         my $tags;
-        if( ref($n->{tags}) eq 'ARRAY' ) {
-            $tags = $n->{tags};
+        if( ref($n->{tag}) eq 'ARRAY' ) {
+            $tags = $n->{tag};
         } else {
-            $tags = [ $n->{tags} ];
+            $tags = [ $n->{tag} ];
         }
+        $tags = [] if ! $tags || ref($tags) ne 'ARRAY';
 
         push(@parsed_notes, new Evernote::Note(
                 parser     => $self->body_parser,

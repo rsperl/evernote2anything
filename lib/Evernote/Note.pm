@@ -28,7 +28,12 @@ sub BUILD {
 sub normalize_title {
     my $self = shift;
     my $title = $self->title;
+    $title =~ s/\N{U+201C}//g;
+    $title =~ s/\N{U+201D}//g;
     $title =~ s/[\|:]/-/g;
+    $title =~ s/[\[\]'"?]//g;
+    $title =~ s/^\.+//;
+    $title =~ s/\.$//;
     return $title;
 }
 

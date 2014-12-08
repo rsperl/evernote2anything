@@ -1,18 +1,49 @@
-#!/usr/bin/env perl
+#!/usr/bin/env perl -w
 
 use strict;
+use Carp;
 use FindBin;
+use Template;
 use Evernote::EnexParser;
 use Evernote::Note::Markdown;
+use Getopt::Long;
 
+$SIG{__DIE__} = sub { confess shift };
 
-my $enex = shift @ARGV;
-die "Could not find enex file" unless -r $enex;
+my ($enex, $outputdir, $template, $tagspaces);
+GetOptions(
+    "enex:s"      => \$enex,
+    "outputdir:s" => \$outputdir,
+    "tagspaces"   => \$tagspaces,
+    "template:s"  => \$template,
+);
+die "Could not find enex file"     unless -r $enex;
+die "Could not find template file" unless -r $template;
 
-my $enc = Evernote::EnexParser->new(xmlfile => $enex, body_parser => Evernote::Note::Markdown->new);
+mkdir $outputdir unless -d $outputdir;
+
+my $enc = Evernote::EnexParser->new(
+                        xmlfile     => $enex,
+                        body_parser => Evernote::Note::Markdown->new
+                    );
 my @notes = $enc->notes;
 
+my $tt = Template->new;
 foreach my $n (@notes) {
-    printf "Title: %s\n",  $n->title;
-    printf "Body:\n%s\n", $n->body;
+
+    my @tags = @{ $n->tags };
+    my $vars = {
+        title       => $n->title,
+        tags_string => join(", ", @tags),
+        body        => $n->body,
+        author      => $n->author,
+        created     => $n->created->ymd . $n->created->hms,
+        updated     => $n->updated->ymd . $n->updated->hms,
+        source      => $n->source
+    };
+    my $fn = "$outputdir/" . $n->normalize_title;
+    $fn .= "[" . join(" ", @tags) . "]" if $tagspaces && @tags;
+    $fn .= ".md";
+    printf "Saving %s\n", $fn;
+    $tt->process($template, $vars, $fn);
 }

@@ -13,6 +13,8 @@ my $enc = Evernote::EnexParser->new(xmlfile => $enex, body_parser => Evernote::N
 isa_ok($enc, "Evernote::EnexParser");
 my @notes = $enc->notes;
 
+note $enc->dump_xml;
+
 foreach my $n (@notes) {
     isa_ok($n, "Evernote::Note");
     note $n->title;
