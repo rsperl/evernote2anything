@@ -4,6 +4,9 @@ use strict;
 use Moose;
 use DateTime;
 use Data::Dumper;
+use utf8;
+use Encode;
+use HTML::Entities;
 
 
 has parser     => (is => 'rw', isa => 'Object', required => 1);
@@ -28,8 +31,8 @@ sub BUILD {
 sub normalize_title {
     my $self = shift;
     my $title = $self->title;
-    $title =~ s/\N{U+201C}//g;
-    $title =~ s/\N{U+201D}//g;
+    $title =~ s/{U+201C}/"/g;
+    $title =~ s/{U+201D}/"/g;
     $title =~ s/[\|:]/-/g;
     $title =~ s/[\[\]'"?]//g;
     $title =~ s/^\.+//;
@@ -39,7 +42,15 @@ sub normalize_title {
 
 sub parse_body {
     my $self = shift;
-    $self->body($self->parser->parse( $self->body_raw ));
+    my $body = $self->body_raw;
+    $body = decode_entities($body);
+    $body = encode("utf8", $body);
+    $body = $self->parser->parse( $body );
+    $body =~ s/\x{00BF}//g; # remove unknown chars
+    $body =~ s/\x{00BD}//g; # remove unknown chars
+    $body =~ s/\x{00EF}//g; # remove unknown chars
+    $body =~ s/\x{FFFD}//g; # remove unknown chars
+    $self->body($body);
     return $self->body;
 }
 

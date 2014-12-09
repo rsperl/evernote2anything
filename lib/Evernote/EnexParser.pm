@@ -41,12 +41,15 @@ sub _parse_notes {
                                 hour => $4, minute => $5, second => $6,
                                 time_zone => "America/New_York");
         }
-        if( $n->{updated} =~ /^(\d\d\d\d)(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)Z$/ ) {
+        if( $n->{updated} && $n->{updated} =~ /^(\d\d\d\d)(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)Z$/ ) {
             $dt_updated = DateTime->new(
                                 year => $1, month => $2,  day => $3,
                                 hour => $4, minute => $5, second => $6,
                                 time_zone => "America/New_York");
+        } else {
+            $dt_updated = DateTime->now(time_zone => "America/New_York");
         }
+
         my $attrs = $n->{'note-attributes'};
         my $tags;
         if( ref($n->{tag}) eq 'ARRAY' ) {

@@ -1,0 +1,9 @@
+-- [% title %]
+
+-- Created:  [% created %]
+-- Updated:  [% updated %]
+-- Author:   [% author %]
+-- Tags:     [% tags_string %]
+-- Source:   [% source %]
+
+[% body %]
