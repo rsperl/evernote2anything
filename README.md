@@ -34,7 +34,9 @@ foreach my $note ( @notes ) {
 }
 ```
 
-Parsing the body is the tricky part. Evernote has special tags for pictures, videos, etc. This at least gives you a easier access to the different parts of the note. The parsing is pluggable -- if you find a better way to create the Markdown, you can create a perl module with the ```parse``` method, and pass an instance of your module to the script. Your parse method will be called to generate the body.
+Parsing the body is the tricky part. Evernote has special tags for pictures, videos, etc. I really need to do an xslt transformation on the note body, but I've never done that before, so it will be a while before I get to that. Any help in that would be welcome. The xslt stylesheet would not have to do much -- copy most nodes, but transform en-media and en-todo.
+
+The parsing is pluggable -- if you find a better way to create the Markdown, you can create a perl module with the ```parse``` method, and pass an instance of your module to the script. Your parse method will be called to generate the body.
 
 
 ## Starter Script
@@ -50,4 +52,4 @@ There is an example enex file in the ```t``` folder for reference.
 
 # Limitations
 
-No media is handled. Images and videos are ignored. I'll see what I can do about that.
+No media is handled. Images and videos are ignored. The next step is to do an xslt transformation on the note body, but I have never done that before, so I'm starting from scratch.
