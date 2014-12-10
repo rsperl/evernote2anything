@@ -44,7 +44,7 @@ The parsing is pluggable -- if you find a better way to create the Markdown, you
 I've included a starter script ```en2something.pl``` to get you started. Use it by calling it as
 
 ```
-PERL5LIB=lib ./en2something.pl --output output-dir --enex path/to/exportedNotes.enex --template templates/t1.body.tt --tagspaces
+PERL5LIB=lib ./en2something.pl --output output-dir --enex path/to/exportedNotes.enex --template templates/t1.body.tt --tagspaces --extension md
 ```
 It will parse the notes and print out the title of each note. Files will be created as markdown in the output-dir. How the note is written is determined by the template (using Template::Toolkit). If --tagspaces is given, the tags will be inserted into the filename.
 
