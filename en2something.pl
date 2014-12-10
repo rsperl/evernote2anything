@@ -35,7 +35,10 @@ foreach my $n (@notes) {
     my $fn = "$outputdir/" . $n->normalize_title;
     if( $tagspaces ) {
         push @tags, $n->created->ymd("");
-        $fn .= "[" . join(" ", @tags) . "]";
+        my $tag_str = join(" ", @tags);
+        $tag_str =~ s/^\s+//;
+        $tag_str =~ s/\s+$//;
+        $fn .= "[" . $tag_str . "]";
     }
     $fn .= ".md";
     my $vars = {

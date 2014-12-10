@@ -3,8 +3,10 @@ package Evernote::EnexParser;
 use strict;
 use Moose;
 use Data::Dumper;
+use FindBin;
 use DateTime;
 use XML::Simple;
+use XML::XSLT;
 use Evernote::Note;
 
 use utf8;
@@ -15,6 +17,16 @@ has body_parser => (is => 'rw', isa => 'Object', required => 1);
 my $xmlparser = XML::Simple->new;
 my $xml;
 my @parsed_notes;
+my $xslt;
+
+sub BUILD {
+    my ($self, $opts) = @_;
+    my $xslt_file = "$FindBin::Bin/enml2html.xslt";
+    open my $fh, '<', $xslt_file;
+    my $xsl = do { local $/; <$fh>; };
+    close $fh;
+    $xslt = XML::XSLT->new ($xsl, warnings => 1);
+}
 
 sub dump_xml {
     print Dumper($xml);
@@ -56,6 +68,9 @@ sub _parse_notes {
         }
         $tags = [] if ! $tags || ref($tags) ne 'ARRAY';
 
+        my $html = $xslt->transform($n->{content})->toString();
+        print "HTML: $html\n";
+
         push(@parsed_notes, new Evernote::Note(
                 parser     => $self->body_parser,
                 tags       => $tags,
@@ -68,6 +83,7 @@ sub _parse_notes {
                 latitude   => $n->{latitude}   || 0,
                 altitude   => $n->{altitude}   || 0,
                 body_raw   => $n->{content},
+                body_html  => $html,
             )
         );
     }
